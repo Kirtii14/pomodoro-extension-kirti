@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "Pomodoro Focus Timer — Aesthetic HTML CSS JS Productivity Tool",
+  "short_name": "Pomodoro Focus",
+  "description": "A clean, aesthetic, minimal Pomodoro productivity extension built using HTML, CSS, and JavaScript. Features sound alerts, dark/light mode, smooth animations, and an elegant UI.",
+  "version": "1.0.0",
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+
+  "permissions": [
+    "storage",
+    "notifications",
+    "alarms"
+  ],
+
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}
