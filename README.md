@@ -1,4 +1,4 @@
-# 🍅 Pomodoro Focus — Aesthetic Productivity Extension
+# 🍅 Pomodoro Focus - Aesthetic Productivity Extension
 
 A clean, minimal, and aesthetic Pomodoro timer extension built using **HTML, CSS, and JavaScript**.  
 Designed for focus, calm productivity, and real-world reliability, inspired by modern product-based applications.
