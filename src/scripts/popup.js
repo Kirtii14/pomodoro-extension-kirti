@@ -116,3 +116,26 @@ chrome.runtime.onMessage.addListener((msg) => {
     localStorage.setItem("pomodoro.completed", current + 1);
   }
 });
+
+
+// Sound preferences
+
+const muteCheckbox = document.getElementById("muteSound");
+const volumeSlider = document.getElementById("volumeControl");
+
+// Load saved preferences
+chrome.storage.local.get(["soundMuted", "soundVolume"], (res) => {
+  muteCheckbox.checked = res.soundMuted ?? false;
+  volumeSlider.value = res.soundVolume ?? 0.6;
+});
+
+// Save mute toggle
+muteCheckbox.addEventListener("change", () => {
+  chrome.storage.local.set({ soundMuted: muteCheckbox.checked });
+});
+
+// Save volume
+volumeSlider.addEventListener("input", () => {
+  chrome.storage.local.set({ soundVolume: Number(volumeSlider.value) });
+});
+

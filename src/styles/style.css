@@ -160,3 +160,18 @@ body.dark {
   --muted: #a0a0a0;
   --accent: #e7a7b1;
 }
+
+/* --------------------
+   Sound Controls
+-------------------- */
+.sound-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.sound-controls input[type="range"] {
+  accent-color: var(--accent);
+}
+
