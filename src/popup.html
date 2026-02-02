@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pomodoro Focus</title>
+  <link rel="stylesheet" href="styles/style.css" />
+</head>
+
+<body>
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <h1>Pomodoro</h1>
+      <button id="themeToggle" class="icon-btn">🌙</button>
+    </header>
+
+    <!-- Timer -->
+    <section class="timer-section">
+      <div id="timer" class="timer">25:00</div>
+      <div class="mode">
+        <span class="active">Work</span>
+        <span>Break</span>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls">
+      <button id="start" class="btn primary">Start</button>
+      <button id="pause" class="btn secondary">Pause</button>
+    </section>
+
+    <!-- Settings preview -->
+    <section class="settings">
+      <div>
+        <label>Work</label>
+        <input id="workTime" type="number" value="25" min="1" />
+      </div>
+      <div>
+        <label>Break</label>
+        <input id="shortBreak" type="number" value="5" min="1" />
+      </div>
+    </section>
+
+  </div>
+
+  <script src="scripts/popup.js"></script>
+  <script src="scripts/sound.js"></script>
+</body>
+</html>
