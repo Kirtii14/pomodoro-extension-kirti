@@ -110,7 +110,7 @@ This separation ensures **reliability, performance, and scalability**.
 
 5. Select the src/ folder from this project
 
-# The extension will appear in your toolbar.
+**The extension will appear in your toolbar.**
 
 
 
