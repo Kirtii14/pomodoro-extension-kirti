@@ -92,12 +92,17 @@ This separation ensures **reliability, performance, and scalability**.
 
 ##  Installation (Local Development)
 
+
+
 1. Clone this repository:
-  ```bash
-git clone https://github.com/Kirtii14/pomodoro-extension-kirti.git
+   ```bash
+   git clone https://github.com/Kirtii14/pomodoro-extension-kirti.git
+
 
 2. Open Google Chrome and navigate to:
-   chrome://extensions
+
+    chrome://extensions
+
 
 3. Enable Developer Mode (top-right corner)
 
@@ -114,7 +119,7 @@ git clone https://github.com/Kirtii14/pomodoro-extension-kirti.git
 
 ## Demo Video:
 
-Add demo video link here (see instructions below).
+ (see instructions below).
 
 
 ## Contact
