@@ -1,21 +1,20 @@
-/* --------------------
-   CSS Variables
--------------------- */
+/* CSS Variables  */
 :root {
   --bg: #f7ede2;
-  --card: #ffffff;
+  --bg-gradient: linear-gradient(180deg, #fff4f7 0%, #f7ede2 100%);
+  --card: rgba(255, 255, 255, 0.9);
   --text: #2f2f2f;
   --muted: #7a7a7a;
   --accent: #e7a7b1;
+  --accent-soft: rgba(231, 167, 177, 0.25);
 
-  --radius: 16px;
-  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+  --radius: 18px;
+  --shadow: 0 20px 40px rgba(0,0,0,0.08);
+  --shadow-soft: 0 10px 20px rgba(0,0,0,0.06);
   --transition: 0.25s ease;
 }
 
-/* --------------------
-   Global Reset
--------------------- */
+/*  Global Reset */
 * {
   margin: 0;
   padding: 0;
@@ -26,13 +25,11 @@
 body {
   width: 320px;
   height: 420px;
-  background: var(--bg);
+  background: var(--bg-gradient);
   color: var(--text);
 }
 
-/* --------------------
-   App Container
--------------------- */
+/* App Container */
 .app {
   background: var(--card);
   height: 100%;
@@ -42,11 +39,12 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  backdrop-filter: blur(12px);
+  animation: fadeIn 0.4s ease;
 }
 
-/* --------------------
-   Header
--------------------- */
+
+/* Header*/
 .header {
   display: flex;
   justify-content: space-between;
@@ -65,17 +63,20 @@ body {
   cursor: pointer;
 }
 
-/* --------------------
-   Timer
--------------------- */
+/* Timer */
 .timer-section {
   text-align: center;
 }
 
 .timer {
-  font-size: 56px;
+  font-size: 58px;
   font-weight: 600;
-  margin: 10px 0;
+  letter-spacing: 0.04em;
+  margin: 12px 0;
+}
+
+body.dark .timer {
+  text-shadow: 0 0 12px rgba(231,167,177,0.25);
 }
 
 .mode {
@@ -91,9 +92,7 @@ body {
   font-weight: 600;
 }
 
-/* --------------------
-   Controls
--------------------- */
+/* Controls */
 .controls {
   display: flex;
   gap: 12px;
@@ -122,9 +121,7 @@ body {
   background: #f0f0f0;
 }
 
-/* --------------------
-   Settings
--------------------- */
+/* Settings */
 .settings {
   display: flex;
   justify-content: space-between;
@@ -150,9 +147,7 @@ body {
   text-align: center;
 }
 
- /* --------------------
-   Dark Theme
--------------------- */
+ /* Dark Theme */
 body.dark {
   --bg: #1e1e1e;
   --card: #2a2a2a;
@@ -161,9 +156,7 @@ body.dark {
   --accent: #e7a7b1;
 }
 
-/* --------------------
-   Sound Controls
--------------------- */
+/* Sound Controls */
 .sound-controls {
   display: flex;
   flex-direction: column;
@@ -173,5 +166,73 @@ body.dark {
 
 .sound-controls input[type="range"] {
   accent-color: var(--accent);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Progress Ring */
+.progress-ring {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-ring svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+}
+
+.ring-bg {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.05);
+  stroke-width: 8;
+}
+
+body.dark .ring-bg {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.ring-progress {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 502;
+  stroke-dashoffset: 502;
+  transition: stroke-dashoffset 0.5s linear;
+}
+
+.timer {
+  position: relative;
+  z-index: 2;
+}
+
+/* Mode transition */
+.mode span {
+  transition:
+    color 0.25s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.mode span.active {
+  color: var(--accent);
+  font-weight: 600;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mode span:not(.active) {
+  opacity: 0.6;
+  transform: translateY(2px);
 }
 

@@ -16,18 +16,40 @@
     </header>
 
     <!-- Timer -->
-    <section class="timer-section">
-      <div id="timer" class="timer">25:00</div>
-      <div class="mode">
-        <span class="active">Work</span>
-        <span>Break</span>
-      </div>
-    </section>
+   <section class="timer-section">
+  <div class="progress-ring">
+    <svg width="180" height="180">
+      <circle
+        class="ring-bg"
+        cx="90"
+        cy="90"
+        r="80"
+      />
+      <circle
+        class="ring-progress"
+        cx="90"
+        cy="90"
+        r="80"
+      />
+    </svg>
+
+    <div id="timer" class="timer">25:00</div>
+  </div>
+
+  <div class="mode">
+  <span id="mode-work" class="active">Work</span>
+  <span id="mode-break">Break</span>
+</div>
+
+</section>
+
 
     <!-- Controls -->
     <section class="controls">
       <button id="start" class="btn primary">Start</button>
       <button id="pause" class="btn secondary">Pause</button>
+      <button id="reset" class="btn secondary">Reset</button>
+      <button id="focusMode" class="btn secondary">Focus Mode</button>
     </section>
 
     <!-- Settings preview -->
