@@ -1,81 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pomodoro Focus</title>
-  <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="styles/style.css"/>
+  <link rel="preconnect"href="https://fonts.googleapis.com"/>
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"   rel="stylesheet" />
 </head>
 
 <body>
+
   <div class="app">
 
-    <!-- Header -->
+    <!-- ===================================
+         HEADER
+    ==================================== -->
+
     <header class="header">
-      <h1>Pomodoro</h1>
-      <button id="themeToggle" class="icon-btn">🌙</button>
+
+      <div class="brand">
+
+        <h1>
+          Pomodoro <span>Focus</span>
+        </h1>
+
+      </div>
+
+      <button
+        id="themeToggle"
+        class="icon-btn"
+        aria-label="Toggle theme" >
+        ☾
+      </button>
+
     </header>
 
-    <!-- Timer -->
-   <section class="timer-section">
-  <div class="progress-ring">
-    <svg width="180" height="180">
-      <circle
-        class="ring-bg"
-        cx="90"
-        cy="90"
-        r="80"
-      />
-      <circle
-        class="ring-progress"
-        cx="90"
-        cy="90"
-        r="80"
-      />
-    </svg>
+    <!-- ===================================
+         TIMER SECTION
+    ==================================== -->
 
-    <div id="timer" class="timer">25:00</div>
-  </div>
+    <section class="timer-section">
 
-  <div class="mode">
-  <span id="mode-work" class="active">Work</span>
-  <span id="mode-break">Break</span>
-</div>
+      <div class="progress-ring">
 
-</section>
+        <svg
+          width="280"
+          height="280"
+          viewBox="0 0 280 280" >
 
+          <defs>
 
-    <!-- Controls -->
-    <section class="controls">
-      <button id="start" class="btn primary">Start</button>
-      <button id="pause" class="btn secondary">Pause</button>
-      <button id="reset" class="btn secondary">Reset</button>
-      <button id="focusMode" class="btn secondary">Focus Mode</button>
-    </section>
+            <linearGradient
+              id="ringGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%" >
 
-    <!-- Settings preview -->
-    <section class="settings">
-      <div>
-        <label>Work</label>
-        <input id="workTime" type="number" value="25" min="1" />
-      </div>
-      <div>
-        <label>Break</label>
-        <input id="shortBreak" type="number" value="5" min="1" />
-      </div>
-      <div class="sound-controls">
-        <label>
-       <input type="checkbox" id="muteSound" /> Mute sound </label>
+              <stop offset="0%"   stop-color="#ff9ab6"/>
+              <stop offset="50%" stop-color="#ff5c8a" />
+              <stop offset="100%" stop-color="#ff7ca4" />
 
-        <input id="volumeControl" type="range" min="0" max="1" step="0.1" value="0.6"/>
+            </linearGradient>
+
+          </defs>
+
+          <circle
+            class="ring-bg"
+            cx="140"
+            cy="140"
+            r="100"/>
+
+          <circle
+            class="ring-progress"
+            cx="140"
+            cy="140"
+            r="100"/>
+
+        </svg>
+
+        <div class="timer-content">
+
+          <div class="timer-icon"> ✦ </div>
+
+          <div id="timer" class="timer">  25:00 </div>
+
+          <p class="timer-subtitle">  Time to focus ✨ </p>
+
         </div>
 
+      </div>
+
+      <!-- ===================================
+           MODES
+      ==================================== -->
+
+      <div class="mode">
+
+        <span id="mode-work" class="active" > Focus </span>
+        <span id="mode-break"> Break </span>
+
+      </div>
+
     </section>
+
+    <!-- ===================================
+         CONTROLS
+    ==================================== -->
+
+    <section class="controls">
+
+      <button id="start" class="btn primary">  ▶ Start </button>
+      <button id="pause" class="btn secondary">  ❚❚ Pause </button>
+      <button id="reset" class="btn secondary"> ↺ Reset </button>
+      <button id="focusMode" class="btn secondary"> Focus Mode </button>
+
+    </section>
+
+    <!-- ===================================
+         SETTINGS
+    ==================================== -->
+
+    <section class="settings">
+
+      <!-- WORK -->
+
+      <div class="setting-card">
+
+        <label> Focus </label>
+
+        <input  id="workTime"  type="number"  value="25"  min="1"/>
+        <span class="setting-unit">  min </span>
+
+      </div>
+
+      <!-- BREAK -->
+
+      <div class="setting-card">
+
+        <label>  Break </label>
+        <input id="shortBreak" type="number" value="5" min="1"/>
+        <span class="setting-unit"> min </span>
+
+      </div>
+
+      <!-- SOUND -->
+
+      <div class="sound-controls">
+      <div class="sound-header">
+          <span>  Sound </span>
+          <span id="volumeValue"> 80% </span>
+        </div>
+
+        <input id="volumeControl"  type="range"  min="0"  max="1" step="0.1" value="0.8" />
+
+        <div class="mute-row">
+           <label for="muteSound"> Mute sounds </label>
+             <label class="toggle">
+
+            <input type="checkbox" id="muteSound"/>
+            <span class="toggle-slider"></span>
+
+          </label>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ===================================
+         FOOTER
+    ==================================== -->
+
+    <footer class="footer-note">
+
+      <span>  Stay focused, stay productive ✨ </span>
+
+    </footer>
 
   </div>
 
-  <script src="scripts/popup.js"></script>
-  <script src="scripts/sound.js"></script>
-  <script src="scripts/theme.js"></script>
+  <script type="module" src="scripts/popup.js"></script>
+  <script type="module" src="scripts/theme.js"></script>
+  <script type="module" src="scripts/sound.js"></script>
 
 </body>
 </html>

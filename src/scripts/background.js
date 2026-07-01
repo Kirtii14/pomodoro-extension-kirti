@@ -1,59 +1,266 @@
-// background.js — Chrome Extension Service Worker
-// This ensures the timer continues even if the popup closes.
+// ======================================================
+// BACKGROUND SERVICE WORKER
+// Thin orchestration layer
+// ======================================================
 
-let timerState = {
-  isRunning: false,
-  endTime: null,
-  mode: "work" // work | shortBreak | longBreak
-};
+import { MESSAGES } from "../core/messages.js";
 
-// Listen for messages from popup.js
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === "START_TIMER") {
-    const durationMs = msg.duration * 60 * 1000; // minutes → ms
-    timerState.isRunning = true;
-    timerState.endTime = Date.now() + durationMs;
-    timerState.mode = msg.mode;
+import {
+  ALARM_NAMES,
+  TIMER_MODES,
+  AUTO_DURATIONS
+} from "../core/constants.js";
 
-    chrome.alarms.create("POMODORO_TIMER", {
-      when: timerState.endTime
-    });
 
-    sendResponse({ status: "started" });
+import {
+
+  initializeTimerState,
+
+  recoverTimerIfNeeded,
+
+  getCurrentTimerState,
+
+  startTimer,
+
+  stopTimer,
+
+  completeTimer,
+
+  getNextSessionMode
+
+} from "../core/timer.js";
+
+import {
+  validateMessage
+} from "../core/messageValidator.js";
+
+// ======================================================
+// INITIALIZATION
+// ======================================================
+
+(async function bootstrap() {
+
+  try {
+
+    await initializeTimerState();
+
+    await recoverTimerIfNeeded();
+
+  } catch (error) {
+
+    console.error("Background initialization failed:", error);
   }
 
-  if (msg.action === "STOP_TIMER") {
-    timerState.isRunning = false;
-    timerState.endTime = null;
-    chrome.alarms.clear("POMODORO_TIMER");
-    sendResponse({ status: "stopped" });
+})();
+
+// ======================================================
+// MESSAGE ROUTER
+// ======================================================
+
+chrome.runtime.onMessage.addListener(
+  (message, sender, sendResponse) => {
+
+    handleMessage(message)
+
+      .then(sendResponse)
+
+      .catch((error) => {
+
+        console.error("Message handling failed:", error );
+
+        sendResponse({
+          success: false,
+          error: "Internal background error"
+        });
+      });
+
+    return true;
+  }
+);
+
+// ======================================================
+// MESSAGE HANDLER
+// ======================================================
+
+async function handleMessage(message) {
+
+  // ----------------------------------------------------
+  // VALIDATE MESSAGE
+  // ----------------------------------------------------
+
+  const validation = validateMessage(message);
+
+  if (!validation.valid) {
+
+    return {
+
+      success: false,
+      error:validation.error
+    };
   }
 
-  if (msg.action === "GET_STATE") {
-    sendResponse(timerState);
+  // ----------------------------------------------------
+  // ROUTE MESSAGE
+  // ----------------------------------------------------
+
+  switch (message.action) {
+
+    // ==================================================
+    // START TIMER
+    // ==================================================
+
+    case MESSAGES.START_TIMER: {
+
+      await startTimer({
+
+        duration: message.duration,
+        mode: message.mode
+      });
+
+      return {
+
+        success: true,
+
+        status:
+          "started"
+      };
+    }
+
+    // ==================================================
+    // STOP TIMER
+    // ==================================================
+
+    case MESSAGES.STOP_TIMER: {
+
+      await stopTimer();
+
+      return {
+
+        success: true,
+        status: "stopped"
+      };
+    }
+
+    // ==================================================
+    // GET STATE
+    // ==================================================
+
+    case MESSAGES.GET_STATE: {
+
+      return {
+
+        success: true,
+        data: getCurrentTimerState()
+      };
+    }
+
+    // ==================================================
+    // UNKNOWN ACTION
+    // ==================================================
+
+    default:
+
+      return {
+
+        success: false,
+        error: "Unknown message action"
+      };
   }
-});
+}
 
-// When alarm triggers → session completed
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === "POMODORO_TIMER") {
-    timerState.isRunning = false;
+// ======================================================
+// ALARM HANDLER
+// ======================================================
 
-    // Notify popup to play sound
-    chrome.runtime.sendMessage({
-      action: "TIMER_FINISHED",
-      mode: timerState.mode
-    });
+chrome.alarms.onAlarm.addListener(
+  async (alarm) => {
 
-    // Desktop notification
-    chrome.notifications.create({
-      type: "basic",
-      iconUrl: "assets/icons/icon128.png",
-      title: "Pomodoro Completed!🍅",
-      message: timerState.mode === "work"
-        ? "Your focus session is finished. Time for a break!"
-        : "Break finished! Ready to focus again?",
-      priority: 2
-    });
+    // --------------------------------------------------
+    // IGNORE UNKNOWN ALARMS
+    // --------------------------------------------------
+
+    if (alarm.name !== ALARM_NAMES.POMODORO) {
+      return;
+    }
+
+    try {
+
+      // ----------------------------------------------
+      // COMPLETE TIMER
+      // ----------------------------------------------
+
+      const state =
+        await completeTimer();
+
+      // ----------------------------------------------
+      // VALIDATE COMPLETED STATE
+      // ----------------------------------------------
+
+      if (!state?.mode) {
+
+        console.warn("Timer completed with invalid state");
+
+        return;
+      }
+
+        
+    // DETERMINE NEXT SESSION
+    
+
+    const nextMode = getNextSessionMode(state);
+
+    
+    // AUTO START NEXT SESSION
+
+    const nextDuration = nextMode === TIMER_MODES.WORK
+
+        ? AUTO_DURATIONS.WORK
+
+        : nextMode === TIMER_MODES.LONG_BREAK
+
+          ? AUTO_DURATIONS.LONG_BREAK
+
+          : AUTO_DURATIONS.SHORT_BREAK;
+
+      await startTimer({ duration: nextDuration,mode: nextMode});
+
+      // ----------------------------------------------
+      // NOTIFY UI
+      // ----------------------------------------------
+
+      chrome.runtime.sendMessage({
+
+        action: MESSAGES.TIMER_FINISHED,
+        mode: nextMode
+      });
+
+      // ----------------------------------------------
+      // DESKTOP NOTIFICATION
+      // ----------------------------------------------
+
+      chrome.notifications.create({
+
+        type: "basic",
+        iconUrl: "assets/icons/icon128.png",
+        title: "Pomodoro Completed 🍅",
+
+        message:
+
+           nextMode === TIMER_MODES.WORK
+
+                  ? "Break finished. Time to focus."
+
+                  : nextMode === TIMER_MODES.LONG_BREAK
+
+                    ? "Great work. Long break started."
+
+                    : "Focus session completed. Short break started.",
+
+        priority: 2 });
+
+    } catch (error) {
+
+      console.error("Alarm handling failed:", error);
+    }
   }
-});
+);

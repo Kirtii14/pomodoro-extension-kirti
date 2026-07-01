@@ -1,41 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
   <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
   <title>Focus Mode</title>
-  <link rel="stylesheet" href="styles/style.css" />
+
+  <link
+    rel="stylesheet"
+    href="styles/style.css"
+  />
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  />
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
 </head>
 
-<body>
-  <div class="app">
+<body class="focus-body">
+
+  <div class="app focus-app">
+
+    <!-- ===================================
+         HEADER
+    ==================================== -->
 
     <header class="header">
-      <h1>Focus</h1>
-      <button id="closeFocus" class="icon-btn">✕</button>
+
+      <div class="brand">
+
+        <h1> Deep <span>Focus</span> </h1>
+
+      </div>
+
+      <button
+        id="closeFocus"
+        class="icon-btn"
+        aria-label="Close focus mode"
+      >
+        ✕
+      </button>
+
     </header>
 
-    <section class="timer-section">
-      <div class="progress-ring">
-        <svg width="180" height="180">
-          <circle class="ring-bg" cx="90" cy="90" r="80" />
-          <circle class="ring-progress" cx="90" cy="90" r="80" />
+    <!-- ===================================
+         FOCUS TIMER
+    ==================================== -->
+
+    <section class="timer-section focus-timer-section">
+
+      <div class="progress-ring focus-ring">
+
+        <svg
+          width="320"
+          height="320"
+          viewBox="0 0 320 320"
+        >
+
+          <defs>
+
+            <linearGradient
+              id="focusRingGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="100%"
+            >
+
+              <stop
+                offset="0%"
+                stop-color="#ffb3c8"
+              />
+
+              <stop
+                offset="50%"
+                stop-color="#ff5c8a"
+              />
+
+              <stop
+                offset="100%"
+                stop-color="#ff7ca4" />
+
+            </linearGradient>
+
+          </defs>
+
+          <circle
+            class="ring-bg"
+            cx="160"
+            cy="160"
+            r="115"/>
+
+          <circle
+            class="ring-progress"
+            cx="160"
+            cy="160"
+            r="115" />
+
         </svg>
-        <div id="timer" class="timer">25:00</div>
+
+        <!-- ===========================
+             TIMER CONTENT
+        ============================ -->
+
+        <div class="timer-content">
+
+          <div class="timer-icon">  ✦ </div>
+          <div id="timer"  class="timer focus-timer" >  25:00 </div>
+          <p class="timer-subtitle">  Eliminate distractions ✨</p>
+
+        </div>
+
       </div>
+
+      <!-- ===================================
+           MODES
+      ==================================== -->
 
       <div class="mode">
-        <span id="mode-work" class="active">Work</span>
-        <span id="mode-break">Break</span>
+
+        <span id="mode-work" class="active" > Focus </span>
+        <span id="mode-break" > Break </span>
+
       </div>
+
     </section>
 
-    <section class="controls">
-      <button id="pause" class="btn secondary">Pause</button>
-      <button id="reset" class="btn secondary">Reset</button>
+    <!-- ===================================
+         FOCUS CONTROLS
+    ==================================== -->
+
+    <section class="controls focus-controls">
+
+      <button id="pause" class="btn secondary"> Pause </button>
+      <button  id="reset"  class="btn secondary" >  Reset </button>
+
     </section>
+
+    <!-- ===================================
+         FOCUS FOOTER
+    ==================================== -->
+
+    <footer class="footer-note focus-footer">
+
+      <span> One session at a time 🌸 </span>
+
+    </footer>
 
   </div>
 
-  <script src="scripts/popup.js"></script>
+  <script type="module" src="scripts/popup.js"></script>
+
 </body>
 </html>

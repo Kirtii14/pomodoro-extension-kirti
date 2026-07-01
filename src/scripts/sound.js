@@ -1,55 +1,110 @@
-// sound.js
-// Handles all audio playback + mute + volume
+// ======================================================
+// SOUND ENGINE
+// Handles audio playback & preferences
+// ======================================================
 
-const DEFAULT_VOLUME = 0.6;
+import {
+  MESSAGES
+} from "../core/messages.js";
+
+import {
+  TIMER_MODES
+} from "../core/constants.js";
+
+import {
+  getSoundSettings
+} from "../core/storage.js";
+
+// ======================================================
+// AUDIO FILES
+// ======================================================
 
 const sounds = {
-  work: new Audio("assets/sounds/work-end.mp3"),
-  shortBreak: new Audio("assets/sounds/break-end.mp3"),
-  longBreak: new Audio("assets/sounds/long-break-end.mp3")
+
+  [TIMER_MODES.WORK]:
+
+    new Audio(
+      "../assets/sounds/work-end.mp3"
+    ),
+
+  [TIMER_MODES.SHORT_BREAK]:
+
+    new Audio(
+      "../assets/sounds/break-end.mp3"
+    ),
+
+  [TIMER_MODES.LONG_BREAK]:
+
+    new Audio(
+      "../assets/sounds/long-break-end.mp3"
+    )
 };
 
-// Load preferences
-function loadAudioPrefs() {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(["soundMuted", "soundVolume"], (res) => {
-      resolve({
-        muted: res.soundMuted ?? false,
-        volume: res.soundVolume ?? DEFAULT_VOLUME
-      });
+// ======================================================
+// APPLY SOUND SETTINGS
+// ======================================================
+
+async function applySoundPreferences() {
+
+  const {
+    muted,
+    volume
+  } = await getSoundSettings();
+
+  Object.values(sounds)
+    .forEach((audio) => {
+
+      audio.volume =
+        muted ? 0 : volume;
     });
-  });
 }
 
-// Apply preferences to all sounds
-async function applyAudioPrefs() {
-  const { muted, volume } = await loadAudioPrefs();
-  Object.values(sounds).forEach(audio => {
-    audio.volume = muted ? 0 : volume;
-  });
-}
+// ======================================================
+// PLAY SOUND
+// ======================================================
 
-// Play sound safely
-async function playSound(type) {
-  await applyAudioPrefs();
+async function playSound(mode) {
 
-  const audio = sounds[type];
-  if (!audio) return;
+  const audio =
+    sounds[mode];
+
+  if (!audio) {
+    return;
+  }
+
+  await applySoundPreferences();
 
   try {
+
     audio.currentTime = 0;
+
     await audio.play();
-  } catch (err) {
-    // Chrome may block autoplay — ignore silently
-    console.warn("Sound blocked:", err);
+
+  } catch (error) {
+
+    console.warn(
+      "Audio playback blocked:",
+      error
+    );
   }
 }
 
-// Listen for timer completion
-chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.action === "TIMER_FINISHED") {
-    if (msg.mode === "work") playSound("work");
-    if (msg.mode === "shortBreak") playSound("shortBreak");
-    if (msg.mode === "longBreak") playSound("longBreak");
+// ======================================================
+// TIMER COMPLETION LISTENER
+// ======================================================
+
+chrome.runtime.onMessage.addListener(
+  async (message) => {
+
+    if (
+      message.action !==
+      MESSAGES.TIMER_FINISHED
+    ) {
+      return;
+    }
+
+    await playSound(
+      message.mode
+    );
   }
-});
+);

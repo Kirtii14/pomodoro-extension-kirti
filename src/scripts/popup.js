@@ -1,229 +1,636 @@
-// popup.js
-// Handles UI + messaging with background.js
-// Timer does NOT run here. Background handles actual timing.
-// Popup only displays remaining time & sends commands.
+// ======================================================
+// POPUP UI CONTROLLER
+// UI layer only — no timer business logic
+// ======================================================
 
-// Elements
-const timerEl = document.getElementById("timer");
-const startBtn = document.getElementById("start");
-const pauseBtn = document.getElementById("pause");
-const resetBtn = document.getElementById("reset");
+import {
+  MESSAGES
+} from "../core/messages.js";
 
-const workInput = document.getElementById("workTime");
-const shortBreakInput = document.getElementById("shortBreak");
+import {
+  TIMER_MODES,
+  DEFAULTS
+} from "../core/constants.js";
 
-const ring = document.querySelector(".ring-progress");
-const RING_LENGTH = 502;
+import {
+  validateDuration,
+  validateVolume
+} from "../core/validation.js";
 
-const modeWorkEl = document.getElementById("mode-work");
-const modeBreakEl = document.getElementById("mode-break");
+import {
 
-const focusBtn = document.getElementById("focusMode");
-const closeFocusBtn = document.getElementById("closeFocus");
+  getSoundSettings,
+  saveSoundSettings,
+  incrementCompletedSessions
 
+} from "../core/storage.js";
 
-   //STATE
+// ======================================================
+// ELEMENTS
+// ======================================================
+
+const timerEl =
+  document.getElementById("timer");
+
+const startBtn =
+  document.getElementById("start");
+
+const pauseBtn =
+  document.getElementById("pause");
+
+const resetBtn =
+  document.getElementById("reset");
+
+const workInput =
+  document.getElementById("workTime");
+
+const shortBreakInput =
+  document.getElementById("shortBreak");
+
+const ring =
+  document.querySelector(".ring-progress");
+
+const modeWorkEl =
+  document.getElementById("mode-work");
+
+const modeBreakEl =
+  document.getElementById("mode-break");
+
+const focusBtn =
+  document.getElementById("focusMode");
+
+const closeFocusBtn =
+  document.getElementById("closeFocus");
+
+const muteCheckbox =
+  document.getElementById("muteSound");
+
+const volumeSlider =
+  document.getElementById("volumeControl");
+
+// ======================================================
+// CONSTANTS
+// ======================================================
+
+const RING_LENGTH = 628;
+
+// ======================================================
+// LOCAL UI STATE
+// ======================================================
 
 let intervalUI = null;
-let bgState = null;
 let totalDurationMs = 0;
 let focusWindowId = null;
+let lastRenderedTime = null;
+let lastRenderedProgress = null;
 
 
-   //UTILITIES
+// ======================================================
+// UTILITIES
+// ======================================================
 
 function formatTime(ms) {
-  const totalSec = Math.max(0, Math.floor(ms / 1000));
-  const min = Math.floor(totalSec / 60).toString().padStart(2, "0");
-  const sec = (totalSec % 60).toString().padStart(2, "0");
-  return `${min}:${sec}`;
+
+  const totalSeconds =
+    Math.max(
+      0,
+      Math.floor(ms / 1000)
+    );
+
+  const minutes =
+    Math.floor(totalSeconds / 60)
+      .toString()
+      .padStart(2, "0");
+
+  const seconds =
+    (totalSeconds % 60)
+      .toString()
+      .padStart(2, "0");
+
+  return `${minutes}:${seconds}`;
 }
+
+// ======================================================
+// MODE UI
+// ======================================================
 
 function setMode(mode) {
-  if (!modeWorkEl || !modeBreakEl) return;
 
-  if (mode === "work") {
-    modeWorkEl.classList.add("active");
-    modeBreakEl.classList.remove("active");
-  } else {
-    modeWorkEl.classList.remove("active");
-    modeBreakEl.classList.add("active");
+  if (!modeWorkEl || !modeBreakEl) {
+    return;
   }
+
+  const isWorkMode =
+    mode === TIMER_MODES.WORK;
+
+  modeWorkEl.classList.toggle(
+    "active",
+    isWorkMode
+  );
+
+  modeBreakEl.classList.toggle(
+    "active",
+    !isWorkMode
+  );
 }
 
+// ======================================================
+// TIMER DISPLAY
+// ======================================================
+function updateTimerUI(remainingMs) {
 
-   //UI UPDATER
+  const formattedTime = formatTime(remainingMs);
+
+  // --------------------------------------------------
+  // PREVENT UNNECESSARY TEXT RENDERS
+  // --------------------------------------------------
+
+  if (formattedTime !== lastRenderedTime) {
+
+    timerEl.textContent = formattedTime;
+
+    lastRenderedTime = formattedTime;
+  }
+
+  // --------------------------------------------------
+  // PROGRESS RING
+  // --------------------------------------------------
+
+  if (ring && totalDurationMs > 0) {
+
+    const progress = Math.max(
+        0,
+        remainingMs / totalDurationMs
+      );
+
+    const dashOffset = RING_LENGTH * progress;
+
+    // ----------------------------------------------
+    // PREVENT UNNECESSARY SVG REPAINTS
+    // ----------------------------------------------
+
+    if (dashOffset !== lastRenderedProgress) {
+
+      ring.style.strokeDashoffset = dashOffset;
+
+      lastRenderedProgress = dashOffset;
+    }
+  }
+
+  // --------------------------------------------------
+  // TIMER COMPLETE
+  // --------------------------------------------------
+
+  if (remainingMs <= 0) {
+
+    timerEl.textContent = "00:00";
+
+    lastRenderedTime = "00:00";
+    if (ring) {
+
+      ring.style.strokeDashoffset = RING_LENGTH;
+
+      lastRenderedProgress = RING_LENGTH;
+    }
+  }
+}
+// ======================================================
+// UI SYNC LOOP
+// ======================================================
+
+function stopUIUpdater() {
+
+  clearInterval(intervalUI);
+
+  intervalUI = null;
+}
 
 function startUIUpdater() {
-  if (intervalUI) return;
 
-  intervalUI = setInterval(() => {
-    chrome.runtime.sendMessage({ action: "GET_STATE" }, (state) => {
-      if (!state) return;
+  if (intervalUI) {
+    return;
+  }
 
-      bgState = state;
-
-      if (!state.isRunning) {
-        clearInterval(intervalUI);
-        intervalUI = null;
-      }
-
-      if (state.endTime) {
-        const remaining = state.endTime - Date.now();
-        timerEl.textContent = formatTime(remaining);
-
-        if (ring && totalDurationMs > 0) {
-          const progress = Math.max(0, remaining / totalDurationMs);
-          ring.style.strokeDashoffset = RING_LENGTH * progress;
+  intervalUI = setInterval(
+    () => {
+      
+      if (document.hidden) {
+          return;
         }
 
-        if (remaining <= 0) {
-          timerEl.textContent = "00:00";
-          if (ring) ring.style.strokeDashoffset = RING_LENGTH;
+      chrome.runtime.sendMessage(
+
+        {
+          action: MESSAGES.GET_STATE
+        },
+
+        (response) => {
+
+          if (!response?.success) {
+
+            console.error(response?.error || "Failed to fetch timer state");
+
+            return;
+          }
+
+          const state = response.data;
+
+          if (!state) {
+            return;
+          }
+
+          if (
+            !state.isRunning
+          ) {
+
+            stopUIUpdater();
+
+            return;
+          }
+
+          if (state.endTime) {
+
+            const remainingMs = state.endTime - Date.now();
+
+            updateTimerUI(remainingMs);
+          }
         }
-      }
-    });
-  }, 1000);
+      );
+    },
+
+    1000
+  );
 }
 
-   //START TIMER
+// ======================================================
+// START TIMER
+// ======================================================
 
 if (startBtn) {
+
   startBtn.addEventListener("click", () => {
-    const duration = Number(workInput.value);
-    totalDurationMs = duration * 60 * 1000;
 
-    chrome.storage.local.set({ totalDurationMs });
+      const duration = validateDuration(
+          workInput.value,
+          DEFAULTS.WORK_DURATION
+        );
 
-    setMode("work");
+      totalDurationMs = duration * 60 * 1000;
 
-    chrome.runtime.sendMessage(
-      { action: "START_TIMER", duration, mode: "work" },
-      () => startUIUpdater()
-    );
-  });
+      setMode(TIMER_MODES.WORK);
+
+      chrome.runtime.sendMessage(
+
+        {
+          action: MESSAGES.START_TIMER,
+          duration,
+          mode: TIMER_MODES.WORK
+        },
+
+        (response) => {
+
+          if (
+            !response?.success
+          ) {
+
+            console.error(response?.error || "Failed to start timer" );
+            return;
+          }
+
+          startUIUpdater();
+        }
+      );
+    }
+  );
 }
 
-
-   //PAUSE TIMER
+// ======================================================
+// PAUSE TIMER
+// ======================================================
 
 if (pauseBtn) {
+
   pauseBtn.addEventListener("click", () => {
-    chrome.runtime.sendMessage({ action: "STOP_TIMER" }, () => {
-      clearInterval(intervalUI);
-      intervalUI = null;
-    });
-  });
+
+      chrome.runtime.sendMessage(
+
+        {
+          action: MESSAGES.STOP_TIMER
+        },
+
+        (response) => {
+
+          if (!response?.success) {
+
+            console.error(response?.error || "Failed to stop timer");
+
+            return;
+          }
+
+          stopUIUpdater();
+        }
+      );
+    }
+  );
 }
 
-
-   //RESET TIMER
+// ======================================================
+// RESET TIMER
+// ======================================================
 
 if (resetBtn) {
+
   resetBtn.addEventListener("click", () => {
-    chrome.runtime.sendMessage({ action: "STOP_TIMER" }, () => {
-      clearInterval(intervalUI);
-      intervalUI = null;
 
-      timerEl.textContent = `${workInput.value.padStart(2, "0")}:00`;
-      if (ring) ring.style.strokeDashoffset = RING_LENGTH;
+      chrome.runtime.sendMessage(
 
-      setMode("work");
-    });
-  });
+        {
+          action: MESSAGES.STOP_TIMER
+        },
+
+        (response) => {
+
+          if (!response?.success) {
+
+            console.error(response?.error ||"Failed to reset timer");
+
+            return;
+          }
+
+          stopUIUpdater();
+
+          const safeDuration = validateDuration(
+              workInput.value,
+              DEFAULTS.WORK_DURATION
+            );
+
+          timerEl.textContent =`${String(safeDuration).padStart(2, "0")}:00`;
+
+          if (ring) {
+
+              ring.style.strokeDashoffset = RING_LENGTH;
+            }
+
+            lastRenderedTime = null;
+            lastRenderedProgress = null;
+
+          setMode(TIMER_MODES.WORK);
+        }
+      );
+    }
+  );
 }
 
-
-  // FOCUS MODE WINDOW
+// ======================================================
+// FOCUS MODE WINDOW
+// ======================================================
 
 if (focusBtn) {
-  focusBtn.addEventListener("click", () => {
-    if (focusWindowId !== null) return;
 
-    chrome.windows.create(
-      {
-        url: "focus.html",
-        type: "popup",
-        width: 360,
-        height: 480,
-        focused: true
-      },
-      (win) => {
-        focusWindowId = win.id;
+  focusBtn.addEventListener(
+    "click",
+
+    () => {
+
+      if (
+        focusWindowId !== null
+      ) {
+        return;
       }
-    );
-  });
+
+      chrome.windows.create(
+
+        {
+          url: "focus.html",
+          type: "popup",
+          width: 520,
+          height: 760,
+          focused: true
+        },
+
+        (windowRef) => {
+
+          focusWindowId = windowRef.id;
+        }
+      );
+    }
+  );
 }
+
+// ======================================================
+// CLOSE FOCUS MODE
+// ======================================================
 
 if (closeFocusBtn) {
-  closeFocusBtn.addEventListener("click", () => {
-    focusWindowId = null;
-    window.close();
-  });
+
+  closeFocusBtn.addEventListener(
+    "click",
+
+    () => {
+
+      focusWindowId = null;
+
+      window.close();
+    }
+  );
 }
 
+// ======================================================
+// INITIAL UI
+// ======================================================
 
-   //SYNC ON POPUP OPEN
+function initializeDefaultUI() {
 
-chrome.storage.local.get(["totalDurationMs"], (res) => {
-  if (res.totalDurationMs) {
-    totalDurationMs = res.totalDurationMs;
+  const safeDuration = validateDuration(
+      workInput.value,
+      DEFAULTS.WORK_DURATION
+    );
+
+  timerEl.textContent =  `${String(safeDuration).padStart(2, "0")}:00`;
+
+      lastRenderedTime = timerEl.textContent;
+
+  if (ring) {
+
+    ring.style.strokeDashoffset = RING_LENGTH;
+    lastRenderedProgress = RING_LENGTH;
   }
-});
 
-chrome.runtime.sendMessage({ action: "GET_STATE" }, (state) => {
-  if (!state) return;
+  setMode(
+    TIMER_MODES.WORK
+  );
+}
 
-  bgState = state;
+// ======================================================
+// INITIAL STATE SYNC
+// ======================================================
 
-  if (state.isRunning && state.endTime) {
-    setMode(state.mode);
-    startUIUpdater();
-  } else {
-    setMode("work");
-    timerEl.textContent = `${workInput.value.padStart(2, "0")}:00`;
-    if (ring) ring.style.strokeDashoffset = RING_LENGTH;
+chrome.runtime.sendMessage(
+
+  {
+    action:
+      MESSAGES.GET_STATE
+  },
+
+  (response) => {
+
+    if (
+      !response?.success
+    ) {
+
+      initializeDefaultUI();
+
+      return;
+    }
+
+    const state =
+      response.data;
+
+    if (
+      state?.isRunning &&
+      state?.endTime
+    ) {
+
+      setMode(state.mode);
+
+      totalDurationMs = state.durationMs || 0;
+
+      startUIUpdater();
+
+    } else {
+
+      initializeDefaultUI();
+    }
   }
-});
+);
 
+// ======================================================
+// TIMER COMPLETION LISTENER
+// ======================================================
 
-   //LISTEN FOR COMPLETION
+chrome.runtime.onMessage.addListener(
 
-chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.action === "TIMER_FINISHED") {
+  async (message) => {
+
+    if (
+      message.action !==  MESSAGES.TIMER_FINISHED
+    ) {
+      return;
+    }
+
     timerEl.textContent = "00:00";
-    if (ring) ring.style.strokeDashoffset = RING_LENGTH;
+    lastRenderedTime = "00:00";
 
-    setMode(msg.mode === "work" ? "break" : "work");
+   if (ring) {
 
-    const current =
-      Number(localStorage.getItem("pomodoro.completed")) || 0;
-    localStorage.setItem("pomodoro.completed", current + 1);
+      ring.style.strokeDashoffset = RING_LENGTH;
+
+      lastRenderedProgress = RING_LENGTH;
+    }
+    setMode(
+
+      message.mode === TIMER_MODES.WORK
+
+        ? TIMER_MODES.SHORT_BREAK
+
+        : TIMER_MODES.WORK
+    );
+
+    await incrementCompletedSessions();
   }
-});
+);
 
+// ======================================================
+// SOUND SETTINGS
+// ======================================================
 
-   //SOUND PREFERENCES
+async function initializeSoundSettings() {
 
-const muteCheckbox = document.getElementById("muteSound");
-const volumeSlider = document.getElementById("volumeControl");
+  const {
+    muted,
+    volume
+  } = await getSoundSettings();
 
-chrome.storage.local.get(["soundMuted", "soundVolume"], (res) => {
-  if (muteCheckbox) muteCheckbox.checked = res.soundMuted ?? false;
-  if (volumeSlider) volumeSlider.value = res.soundVolume ?? 0.6;
-});
+  if (muteCheckbox) {
+
+    muteCheckbox.checked =
+      muted;
+  }
+
+  if (volumeSlider) {
+
+    volumeSlider.value =
+      volume;
+  }
+}
+
+initializeSoundSettings();
+
+// ------------------------------------------------------
+// MUTE
+// ------------------------------------------------------
 
 if (muteCheckbox) {
-  muteCheckbox.addEventListener("change", () => {
-    chrome.storage.local.set({ soundMuted: muteCheckbox.checked });
-  });
+
+  muteCheckbox.addEventListener(
+
+    "change",
+
+    async () => {
+
+      const volume =
+        validateVolume(
+          volumeSlider.value
+        );
+
+      await saveSoundSettings({
+
+        muted:
+          muteCheckbox.checked,
+
+        volume
+      });
+    }
+  );
 }
+
+// ------------------------------------------------------
+// VOLUME
+// ------------------------------------------------------
 
 if (volumeSlider) {
-  volumeSlider.addEventListener("input", () => {
-    chrome.storage.local.set({
-      soundVolume: Number(volumeSlider.value)
-    });
-  });
+
+  volumeSlider.addEventListener(
+
+    "input",
+
+    async () => {
+
+      const volume =
+        validateVolume(
+          volumeSlider.value
+        );
+
+      await saveSoundSettings({
+
+        muted:
+          muteCheckbox.checked,
+
+        volume
+      });
+    }
+  );
 }
 
+// ======================================================
+// CLEANUP
+// ======================================================
+
+window.addEventListener(
+  "beforeunload",
+
+  () => {
+
+    stopUIUpdater();
+  }
+);
