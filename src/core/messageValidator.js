@@ -54,9 +54,7 @@ export function validateMessage(message) {
 
   if (message.action === MESSAGES.START_TIMER) {
 
-    const validModes = Object.values(
-      TIMER_MODES
-    );
+    const validModes = Object.values(TIMER_MODES);
 
     if (
       typeof message.duration !== "number"

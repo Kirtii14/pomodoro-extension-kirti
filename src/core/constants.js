@@ -17,6 +17,16 @@ export const DEFAULTS = Object.freeze({
   THEME: "light"
 });
 
+// ======================================================
+// AUTO SESSION DURATIONS
+// ======================================================
+
+export const AUTO_DURATIONS = Object.freeze({
+  WORK: 25,
+  SHORT_BREAK: 5,
+  LONG_BREAK: 15
+});
+
 export const STORAGE_KEYS = Object.freeze({
   TIMER_STATE: "timerState",
   TOTAL_DURATION: "totalDurationMs",

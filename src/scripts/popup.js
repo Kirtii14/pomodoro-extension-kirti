@@ -271,10 +271,9 @@ if (startBtn) {
   startBtn.addEventListener("click", () => {
 
       const duration = validateDuration(
-          workInput.value,
-          DEFAULTS.WORK_DURATION
-        );
-
+    workInput?.value || DEFAULTS.WORK_DURATION,
+    DEFAULTS.WORK_DURATION
+);
       totalDurationMs = duration * 60 * 1000;
 
       setMode(TIMER_MODES.WORK);
@@ -360,9 +359,9 @@ if (resetBtn) {
           stopUIUpdater();
 
           const safeDuration = validateDuration(
-              workInput.value,
+              workInput?.value || DEFAULTS.WORK_DURATION,
               DEFAULTS.WORK_DURATION
-            );
+          );
 
           timerEl.textContent =`${String(safeDuration).padStart(2, "0")}:00`;
 
@@ -441,10 +440,10 @@ if (closeFocusBtn) {
 
 function initializeDefaultUI() {
 
-  const safeDuration = validateDuration(
-      workInput.value,
-      DEFAULTS.WORK_DURATION
-    );
+const safeDuration = validateDuration(
+    workInput?.value || DEFAULTS.WORK_DURATION,
+    DEFAULTS.WORK_DURATION
+);
 
   timerEl.textContent =  `${String(safeDuration).padStart(2, "0")}:00`;
 

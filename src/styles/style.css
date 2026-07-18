@@ -126,37 +126,32 @@
 body.dark {
 
   color-scheme: dark;
-
-  --bg-primary: #090910;
-  --bg-secondary: #10101a;
+  --text-primary: #f5f1f7;
+  --text-secondary: #b4aebb;
 
   --bg-gradient:
-    radial-gradient(
-      circle at top left,
-      rgba(255,92,138,0.18) 0%,
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at bottom right,
-      rgba(255,92,138,0.08) 0%,
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at center,
-      rgba(83,28,55,0.22) 0%,
-      transparent 48%
-    ),
-    linear-gradient(
-      180deg,
-      #07070c 0%,
-      #10101a 100%
-    );
+  radial-gradient(
+    circle at top left,
+    rgba(255,92,138,0.14) 0%,
+    transparent 24%
+  ),
+  radial-gradient(
+    circle at bottom right,
+    rgba(255,92,138,0.08) 0%,
+    transparent 22%
+  ),
+  linear-gradient(
+    180deg,
+    #040408 0%,
+    #090910 52%,
+    #11111b 100%
+  );
 
-  --glass-bg: rgba(18,18,30,0.68);
-  --glass-strong: rgba(26,26,42,0.84);
-  --glass-hover: rgba(34,34,52,0.94);
-  --text-primary: #ffffff;
-  --text-secondary: #b7aec4;
+  --glass-bg: rgba(10,10,18,0.82);
+  --glass-strong: rgba(18,18,28,0.94);
+  --glass-hover: rgba(28,28,40,0.98);
+  --bg-primary: #05050a;
+  --bg-secondary: #0b0b14;
   --text-muted: #80788f;
   --border-soft: rgba(255,255,255,0.06);
   --border-strong: rgba(255,255,255,0.12);
@@ -188,13 +183,17 @@ body {
 
 body {
 
-  width: 420px;
-  min-height: auto;
+  width: 380px;
+  min-width: 380px;
+  max-width: 380px;
+  min-height: 640px;
+  margin: 0;
   padding: 14px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   overflow-x: hidden;
+  overflow-y: hidden;
   font-family: var(--font-ui);
   background: var(--bg-gradient);
   color: var(--text-primary);
@@ -203,7 +202,6 @@ body {
     background var(--transition-slow),
     color var(--transition-normal);
 }
-
 /* =========================================================
    AMBIENT GLOW
 ========================================================= */
@@ -242,6 +240,7 @@ body::before {
   position: relative;
   z-index: 2;
   width: 100%;
+  min-height: 610px;
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -477,8 +476,10 @@ body.dark .ring-bg {
   stroke-linecap: round;
   stroke-dasharray: 628;
   stroke-dashoffset: 180;
+  animation: ringGlow 4s ease-in-out infinite;
   transition:   stroke-dashoffset 1s linear;
-  filter: drop-shadow(0 0 6px rgba(255,92,138,0.18))
+  filter:
+  drop-shadow(0 0 6px rgba(255,92,138,0.18))
   drop-shadow(0 0 12px rgba(255,92,138,0.22))
   drop-shadow(0 0 22px rgba(255,92,138,0.12));
 }
@@ -497,6 +498,7 @@ body.dark .ring-bg {
   gap: 10px;
   backdrop-filter: blur(1px);
   position: relative;
+  animation: breathing 5s ease-in-out infinite;
 }
 
 .timer-content::before {
@@ -527,12 +529,12 @@ body.dark .ring-bg {
 
 .timer {
 
-  font-size: 60px;
+  font-size: 56px;
   font-weight: 800;
   letter-spacing: -0.08em;
   line-height: 1;
   color:   var(--text-primary);
-  text-shadow:   0 10px 24px rgba(255,92,138,0.08);
+  text-shadow: 0 6px 18px rgba(255,92,138,0.06);
 }
 
 /* SUBTITLE */
@@ -613,13 +615,14 @@ body.dark .ring-bg {
 
 .btn:hover {
 
-  transform:
-    translateY(-2px);
+  transform: translateY(-3px) scale(1.015);
+  box-shadow: 0 18px 36px rgba(255,92,138,0.16);
 }
 
 .btn:active {
 
-  transform: scale(0.98);
+  transform: translateY(1px) scale(0.975);
+  transition: transform 90ms ease;
 }
 
 /* PRIMARY */
@@ -706,8 +709,8 @@ body.dark .sound-controls {
 .setting-card:hover,
 .sound-controls:hover {
 
-  transform:   translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 18px 42px rgba(255,92,138,0.12);
 }
 
 /* LABEL */
@@ -853,7 +856,7 @@ body.dark .sound-controls {
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  background: rgba(0,0,0,0.08);
+  background: rgba(0,0,0,0.12);
   border:  1px solid rgba(0,0,0,0.08);
   backdrop-filter: blur(12px);
   transition: all var(--transition-normal);
@@ -862,11 +865,8 @@ body.dark .sound-controls {
 
 body.dark .toggle-slider {
 
-  background:
-    rgba(255,255,255,0.12);
-
-  border:
-    1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 /* KNOB */
@@ -883,6 +883,7 @@ body.dark .toggle-slider {
   background: white;
   box-shadow: 0 4px 12px rgba(0,0,0,0.16);
   transition:  all var(--transition-normal);
+  border: 1px solid rgba(0,0,0,0.04);
 }
 
 /* ACTIVE */
@@ -1001,6 +1002,66 @@ body.dark .toggle-slider {
   }
 }
 
+@keyframes floatingApp {
+
+  0% {
+
+    transform: translateY(0px);
+  }
+
+  50% {
+
+    transform: translateY(-3px);
+  }
+
+  100% {
+
+    transform: translateY(0px);
+  }
+}
+
+@keyframes breathing {
+
+  0% {
+
+    transform: scale(1);
+  }
+
+  50% {
+
+    transform: scale(1.012);
+  }
+
+  100% {
+
+    transform: scale(1);
+  }
+}
+
+@keyframes ringGlow {
+
+  0% {
+
+    filter:
+      drop-shadow(0 0 6px rgba(255,92,138,0.16))
+      drop-shadow(0 0 12px rgba(255,92,138,0.18));
+  }
+
+  50% {
+
+    filter:
+      drop-shadow(0 0 10px rgba(255,92,138,0.22))
+      drop-shadow(0 0 18px rgba(255,92,138,0.24))
+      drop-shadow(0 0 28px rgba(255,92,138,0.12));
+  }
+
+  100% {
+
+    filter:
+      drop-shadow(0 0 6px rgba(255,92,138,0.16))
+      drop-shadow(0 0 12px rgba(255,92,138,0.18));
+  }
+}
 /* =========================================================
    ACCESSIBILITY
 ========================================================= */
@@ -1008,9 +1069,7 @@ body.dark .toggle-slider {
 button:focus-visible,
 input:focus-visible {
 
-  outline:
-    2px solid var(--accent-primary);
-
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 
@@ -1029,32 +1088,26 @@ input:focus-visible {
   }
 }
 
+
 /* =========================================================
-   RESPONSIVE SAFETY
+   PREMIUM SCROLLBAR
 ========================================================= */
 
-@media (max-height: 760px) {
-
-  .app {
-
-    gap: 18px;
-    padding: 24px;
-  }
-
-  .progress-ring {
-
-    width: 220px;
-    height: 220px;
-  }
-
-  .timer {
-
-    font-size: 58px;
-  }
-
-  .btn {
-
-    height: 54px;
-  }
+::-webkit-scrollbar {
+  width: 8px;
 }
 
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+
+  background:rgba(255,92,138,0.22);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+
+  background: rgba(255,92,138,0.38);
+}
